@@ -12,6 +12,7 @@ interface Track {
   artistName: string
   spotifyUrl: string
   previewUrl: string | null
+  albumArtUrl: string | null
 }
 
 interface Fortune {
