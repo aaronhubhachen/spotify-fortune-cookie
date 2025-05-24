@@ -9,7 +9,8 @@ declare module 'next-auth' {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+// Define authOptions but do not export it directly from this route handler file
+const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID || '',
@@ -28,7 +29,7 @@ export const authOptions: NextAuthOptions = {
             'playlist-read-collaborative',
             'streaming',
             'user-library-read',
-            'user-top-read'
+            'user-top-read' // Note: user-top-read is duplicated, can be removed from one place
           ].join(' '),
           show_dialog: true
         }
