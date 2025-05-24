@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '../auth/auth.config'
 
 interface SpotifyTrack {
   track?: {
@@ -12,6 +12,13 @@ interface SpotifyTrack {
       spotify: string
     }
     preview_url: string | null
+    album: {
+      images: Array<{
+        url: string
+        height: number
+        width: number
+      }>
+    }
   }
   // For top tracks which don't have the 'track' wrapper
   name?: string
@@ -22,6 +29,13 @@ interface SpotifyTrack {
     spotify: string
   }
   preview_url?: string | null
+  album?: {
+    images: Array<{
+      url: string
+      height: number
+      width: number
+    }>
+  }
 }
 
 interface SpotifyResponse {
@@ -67,6 +81,7 @@ function normalizeTrack(track: SpotifyTrack): {
   artistName: string
   spotifyUrl: string
   previewUrl: string | null
+  albumArtUrl: string | null
 } {
   let normalizedTrack;
   if (track.track) {
@@ -74,14 +89,16 @@ function normalizeTrack(track: SpotifyTrack): {
       name: track.track.name,
       artistName: track.track.artists[0].name,
       spotifyUrl: track.track.external_urls.spotify,
-      previewUrl: track.track.preview_url
+      previewUrl: track.track.preview_url,
+      albumArtUrl: track.track.album?.images[0]?.url || null
     }
   } else {
     normalizedTrack = {
       name: track.name!,
       artistName: track.artists![0].name,
       spotifyUrl: track.external_urls!.spotify,
-      previewUrl: track.preview_url || null
+      previewUrl: track.preview_url || null,
+      albumArtUrl: track.album?.images[0]?.url || null
     }
   }
   // console.log('Normalized track:', normalizedTrack)

@@ -7,6 +7,7 @@ interface Track {
   artistName: string
   spotifyUrl: string
   previewUrl: string | null
+  albumArtUrl: string | null
 }
 
 interface Fortune {
@@ -57,6 +58,11 @@ export default function FortuneDisplay({ fortune, loading, error }: FortuneDispl
         <div className={styles.trackList}>
           {fortune.tracks.map((track, index) => (
             <div key={index} className={styles.track}>
+              {track.albumArtUrl && (
+                <div className={styles.albumArt}>
+                  <img src={track.albumArtUrl} alt={`Album art for ${track.name}`} />
+                </div>
+              )}
               <div className={styles.trackInfo}>
                 <span className={styles.trackName}>{track.name}</span>
                 <span className={styles.artistName}>by {track.artistName}</span>
