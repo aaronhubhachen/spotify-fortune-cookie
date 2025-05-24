@@ -1,59 +1,91 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #121212; /* Dark background similar to Spotify */
+  color: #ffffff;
+  padding: 0 1rem;
+  overflow-x: hidden;
+}
+
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3rem;
+  justify-content: center;
+  flex-grow: 1;
+  padding: 4rem 1rem;
   width: 100%;
+  max-width: 700px; /* Max width for content area */
+  text-align: center;
 }
 
 .header {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
 .title {
-  font-size: 3rem;
-  line-height: 1;
+  font-size: clamp(2.5rem, 10vw, 4.5rem); /* Responsive font size */
   font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.7));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-@media (min-width: 768px) {
-  .title {
-    font-size: 4.5rem;
-  }
+  color: #1DB954; /* Spotify green */
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 500;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2.5rem;
+  font-weight: 300;
 }
 
 .fortuneSection {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  align-items: center;
+  gap: 2rem;
 }
 
 .buttonGroup {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Stack buttons vertically on small screens */
+  align-items: center;
   gap: 1rem;
-  width: 100%;
+  margin-top: 1rem; /* Add some space above the button group */
 }
 
-@media (min-width: 768px) {
+.timer {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+}
+
+/* For wider screens, make buttons side-by-side */
+@media (min-width: 640px) {
   .buttonGroup {
     flex-direction: row;
     justify-content: center;
-    gap: 1.5rem;
   }
+}
+
+/* Ensure footer is at the bottom */
+.footer {
+  width: 100%;
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto; /* Pushes footer to the bottom */
+}
+
+.footer a {
+  color: #1DB954;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
 } 

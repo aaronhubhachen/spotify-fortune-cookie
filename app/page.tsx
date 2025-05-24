@@ -38,6 +38,30 @@ export default function Home() {
   const [canFetchNewFortune, setCanFetchNewFortune] = useState(true)
   const initialLoadRef = useRef(true)
 
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
+
+  const calculateTimeUntilMidnight = () => {
+    const now = new Date()
+    const midnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1, // Next day's midnight
+      0, 0, 0 // at 00:00:00
+    )
+    const diff = midnight.getTime() - now.getTime()
+
+    if (diff <= 0) { // Should not happen if logic is correct, but as a fallback
+      setTimeLeft({ hours: 0, minutes: 0, seconds: 0 })
+      setCanFetchNewFortune(true) // Midnight has passed
+      return
+    }
+
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+    const minutes = Math.floor((diff / 1000 / 60) % 60)
+    const seconds = Math.floor((diff / 1000) % 60)
+    setTimeLeft({ hours, minutes, seconds })
+  }
+
   const getFortune = async (isManualRequest = false) => {
     if (!session) return
 
@@ -49,14 +73,14 @@ export default function Home() {
         const parsedData: StoredFortune = JSON.parse(storedFortuneData)
         if (parsedData.date === todayString && parsedData.fortune) {
           setFortune(parsedData.fortune)
-          setCanFetchNewFortune(false) // Already have today's fortune
+          setCanFetchNewFortune(false)
           setError(null)
           setLoading(false)
           return
         }
       } catch (e) {
         console.error("Error parsing stored fortune:", e)
-        localStorage.removeItem('spotifyFortuneCookie') // Clear corrupted data
+        localStorage.removeItem('spotifyFortuneCookie')
       }
     }
 
@@ -79,7 +103,7 @@ export default function Home() {
       if (data.fortune) {
         setFortune(data.fortune)
         localStorage.setItem('spotifyFortuneCookie', JSON.stringify({ fortune: data.fortune, date: todayString }))
-        setCanFetchNewFortune(false) // Just fetched today's fortune
+        setCanFetchNewFortune(false) 
       } else {
         setError('Could not retrieve a fortune. Please try again.')
         setFortune(null)
@@ -94,12 +118,22 @@ export default function Home() {
 
   useEffect(() => {
     if (session && initialLoadRef.current) {
-      getFortune() // Attempt to load from localStorage or fetch new if needed
+      getFortune()
       initialLoadRef.current = false
     }
 
+    let timerInterval: NodeJS.Timeout | null = null
+    let dailyCheckInterval: NodeJS.Timeout | null = null
+
+    if (!canFetchNewFortune) {
+      calculateTimeUntilMidnight() // Initial calculation
+      timerInterval = setInterval(calculateTimeUntilMidnight, 1000) // Update every second
+    } else {
+      if (timerInterval) clearInterval(timerInterval)
+    }
+    
     // Check if it's a new day to re-enable the button
-    const interval = setInterval(() => {
+    dailyCheckInterval = setInterval(() => {
       const todayString = getTodayDateString()
       const storedFortuneData = localStorage.getItem('spotifyFortuneCookie')
       if (storedFortuneData) {
@@ -107,18 +141,23 @@ export default function Home() {
           const parsedData: StoredFortune = JSON.parse(storedFortuneData)
           if (parsedData.date !== todayString) {
             setCanFetchNewFortune(true)
+            if (timerInterval) clearInterval(timerInterval) // Stop countdown if new day starts
           }
         } catch (e) {
-          // If error, allow fetching new one
           setCanFetchNewFortune(true)
+          if (timerInterval) clearInterval(timerInterval)
         }
       } else {
-        setCanFetchNewFortune(true) // No stored fortune, can fetch
+        setCanFetchNewFortune(true)
+        if (timerInterval) clearInterval(timerInterval)
       }
-    }, 60000) // Check every minute
+    }, 30000) // Check every 30 seconds for more responsiveness than 1 minute
 
-    return () => clearInterval(interval)
-  }, [session])
+    return () => {
+      if (timerInterval) clearInterval(timerInterval)
+      if (dailyCheckInterval) clearInterval(dailyCheckInterval)
+    }
+  }, [session, canFetchNewFortune])
 
   return (
     <Layout>
@@ -155,12 +194,19 @@ export default function Home() {
               ) : (
                 <>
                   <Button
-                    onClick={() => getFortune(true)} // Pass true for manual request
+                    onClick={() => getFortune(true)}
                     disabled={loading || !canFetchNewFortune}
                     title={!canFetchNewFortune && fortune ? "You already have your fortune for today! Check back tomorrow." : undefined}
                   >
                     {loading ? 'Opening cookie...' : (canFetchNewFortune || !fortune ? 'Get Your Daily Fortune 🥠' : 'Today\'s Fortune Received')}
                   </Button>
+                  {!canFetchNewFortune && fortune && (
+                    <p className={styles.timer}>
+                      New fortune in: {String(timeLeft.hours).padStart(2, '0')}:{
+                        String(timeLeft.minutes).padStart(2, '0')}:{
+                        String(timeLeft.seconds).padStart(2, '0')}
+                    </p>
+                  )}
                   <Button
                     variant="secondary"
                     onClick={() => signOut()}
